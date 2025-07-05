@@ -4,8 +4,9 @@ import com.vagas.vagas.company.dtos.CompanyRegisterDTO;
 import com.vagas.vagas.company.dtos.CompanyResponseDTO;
 import com.vagas.vagas.company.dtos.CompanyUpdateDTO;
 import com.vagas.vagas.exceptions.ResourceNotFoundException;
+import com.vagas.vagas.user.USER_ROLE;
+import com.vagas.vagas.user.UserEntity;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +24,24 @@ public class CompanyService {
     private final CompanyMapper companyMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public CompanyResponseDTO registerCompany(CompanyRegisterDTO companyRegisterDTO) {
-        CompanyEntity companyEntity = companyMapper.toEntity(companyRegisterDTO);
-        companyEntity.setPassword(passwordEncoder.encode(companyRegisterDTO.password()));
-        CompanyEntity savedCompany = companyRepository.save(companyEntity);
+    public CompanyResponseDTO registerCompany(CompanyRegisterDTO dto) {
 
-        return companyMapper.toResponseDTO(savedCompany);
+        UserEntity newUser = new UserEntity();
+        newUser.setName(dto.name());
+        newUser.setEmail(dto.email());
+        newUser.setPhone(dto.phone());
+        newUser.setPassword(passwordEncoder.encode(dto.password()));
+        newUser.setRole(USER_ROLE.COMPANY);
+
+        CompanyEntity companyProfile = new CompanyEntity();
+        companyProfile.setAddress(dto.address());
+        companyProfile.setSocialNumber(dto.socialNumber());
+
+        companyProfile.setUser(newUser);
+
+        companyRepository.save(companyProfile);
+
+        return companyMapper.toResponseDTO(companyProfile);
     }
 
     public CompanyResponseDTO findById(UUID id) {

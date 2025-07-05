@@ -1,12 +1,13 @@
 package com.vagas.vagas.company.dtos;
 
-public record CompanyResponseDTO (
-        String id,
+import java.util.UUID;
+
+public record CompanyResponseDTO(
+        UUID id,
+        UUID userId,
         String name,
         String email,
-        String password,
         String phone,
-        String SocialNumber,
+        String socialNumber, // <-- Corrigido para camelCase (s minúsculo)
         String address
-)
-{}
+) {}

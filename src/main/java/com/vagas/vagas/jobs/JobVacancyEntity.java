@@ -6,14 +6,16 @@ import com.vagas.vagas.enums.SENIORITY_LEVEL;
 import com.vagas.vagas.recruiter.RecruiterEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -47,5 +49,9 @@ public class JobVacancyEntity {
             fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     private List<ApplicationEntity> applications;
+
+    public JobVacancyEntity() {
+        applications = new ArrayList<>();
+    }
 
 }

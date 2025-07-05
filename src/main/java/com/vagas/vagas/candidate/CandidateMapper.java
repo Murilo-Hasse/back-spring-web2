@@ -16,12 +16,12 @@ public interface CandidateMapper {
 
     CandidateMapper INSTANCE = Mappers.getMapper(CandidateMapper.class);
 
-    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "user.idUser", target = "userId")
     @Mapping(source = "user.name", target = "name")
     @Mapping(source = "user.email", target = "email")
     @Mapping(source = "user.phone", target = "phone")
     @Mapping(source = "id", target = "id") // Mapeia o ID do próprio perfil do candidato
-    @Mapping(source = "socialNumber", target = "socialNumber")
+    @Mapping(source = "socialNumber", target = "SocialNumber")
     CandidateResponseDTO toResponseDTO(CandidateEntity candidate);
 
     // 2. Definindo e nomeando o metodo para ser encontrado pelo MapStruct
