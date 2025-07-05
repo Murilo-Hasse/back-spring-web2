@@ -17,12 +17,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -50,7 +54,15 @@ public class AuthController {
 
         // Se a autenticação passar, busca o usuário e gera o token
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.email());
-        final String token = jwtService.generateToken(userDetails);
+        var authorities = userDetails.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("roles", authorities);
+
+        final String token = jwtService.generateToken(extraClaims, userDetails);
 
         return ResponseEntity.ok(new LoginResponseDTO(token));
     }

@@ -41,7 +41,6 @@ public class ApplicationConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        // O gerenciador de autenticação que usaremos no nosso controller de login
         return config.getAuthenticationManager();
     }
 }
