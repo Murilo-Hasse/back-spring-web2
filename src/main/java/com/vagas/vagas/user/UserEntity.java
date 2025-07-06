@@ -41,8 +41,25 @@ public class UserEntity implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Retorna o "papel" do usuário para o Spring Security. Ex: "ROLE_CANDIDATE"
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        if (this.role == null) {
+            // Log para quando a role é nula
+            System.out.println("!!! ATENÇÃO: A role do utilizador " + this.email + " é nula. Nenhuma autoridade será concedida.");
+            return List.of();
+        }
+
+        // Cria a lista de autoridades
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+
+        // --- INÍCIO DO LOG DE DEPURACÃO ---
+        // Imprime na consola as autoridades que estão a ser retornadas para este utilizador
+        System.out.println("---[DEBUG - getAuthorities]---");
+        System.out.println("Utilizador: " + this.email);
+        System.out.println("Role no Banco: " + this.role.name());
+        System.out.println("Autoridades retornadas para o Spring Security: " + authorities);
+        System.out.println("-----------------------------");
+        // --- FIM DO LOG DE DEPURACÃO ---
+
+        return authorities;
     }
 
     @Override

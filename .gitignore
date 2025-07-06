@@ -34,6 +34,7 @@ build/
 
 ###maven
 mvnw.cmd
+*.txt
 
 
 ### environments

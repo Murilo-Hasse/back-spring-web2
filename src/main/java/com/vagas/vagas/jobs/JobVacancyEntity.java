@@ -37,11 +37,11 @@ public class JobVacancyEntity {
     private SENIORITY_LEVEL jobLevel;
 
     @ManyToOne
-    @JoinColumn(name = "company_id")
+    @JoinColumn(name = "company_id",  nullable = false)
     private CompanyEntity company;
 
     @ManyToOne
-    @JoinColumn(name = "recruiter_id", nullable = false)
+    @JoinColumn(name = "recruiter_id", nullable = true)
     private RecruiterEntity recruiter;
 
     @OneToMany(

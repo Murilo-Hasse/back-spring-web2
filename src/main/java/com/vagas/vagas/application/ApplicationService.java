@@ -24,34 +24,33 @@ public class ApplicationService {
     private final ApplicationLogService logService;
 
 
-    @Transactional
-    public ApplicationEntity createApplication(UUID candidateId, UUID jobVacancyId) {
-        // 1. Valida se o candidato e a vaga existem
-        CandidateEntity candidate = candidateRepository.findById(candidateId)
-                .orElseThrow(() -> new RuntimeException("Candidato não encontrado!"));
 
+    @Transactional
+    public ApplicationEntity createApplication(CandidateEntity candidate, UUID jobVacancyId) {
+        // 1. Valida se a vaga existe (a validação do candidato já não é necessária aqui)
         JobVacancyEntity jobVacancy = jobVacancyRepository.findById(jobVacancyId)
                 .orElseThrow(() -> new RuntimeException("Vaga não encontrada!"));
 
-        // 2. Cria a nova entidade de candidatura
+        // 2. Cria a nova entidade de candidatura usando o objeto do candidato recebido
         ApplicationEntity newApplication = new ApplicationEntity();
-        newApplication.setCandidate(candidate);
+        newApplication.setCandidate(candidate); // Usa o objeto diretamente
         newApplication.setJobVacancy(jobVacancy);
-        newApplication.setStatus(JOB_STATUS.INSCRITO); // Define o status inicial
+        newApplication.setStatus(JOB_STATUS.INSCRITO);
 
-        // 3. Salva a nova candidatura no banco relacional
+        // 3. Salva a nova candidatura
         ApplicationEntity savedApplication = applicationRepository.save(newApplication);
 
-
+        // 4. Regista o log
         logService.logStatusChange(
                 savedApplication.getId(),
                 savedApplication.getStatus(),
                 candidate.getId().toString(),
-                "CANDIDATE" // Um novo tipo de ator para a criação
+                "CANDIDATE"
         );
 
         return savedApplication;
     }
+
 
 
     @Transactional

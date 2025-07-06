@@ -4,6 +4,7 @@ import com.vagas.vagas.application.dtos.ApplicationCreateDTO;
 import com.vagas.vagas.application.dtos.ApplicationResponseDTO;
 import com.vagas.vagas.application.dtos.ApplicationStatusUpdateDTO;
 import com.vagas.vagas.candidate.CandidateEntity;
+import com.vagas.vagas.candidate.CandidateRepository;
 import com.vagas.vagas.candidate.dtos.CandidateSummaryDTO;
 import com.vagas.vagas.company.CompanyEntity;
 import com.vagas.vagas.company.dtos.CompanySummaryResponseDTO;
@@ -19,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -29,37 +31,41 @@ import java.util.UUID;
 public class ApplicationController {
 
     private final ApplicationService applicationService;
+    private final CandidateRepository candidateRepository;
+    private final ApplicationMapper applicationMapper;
 
-    /**
-     * Endpoint para um candidato se aplicar a uma vaga.
-     * Apenas usuários autenticados como 'CANDIDATE' devem ter acesso.
-     */
     @PostMapping
-    @PreAuthorize("hasRole('CANDIDATE')") // Exemplo de como proteger com Spring Security
+    @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<ApplicationResponseDTO> applyToJob(
-            @Valid @RequestBody ApplicationCreateDTO requestDTO,
-            @AuthenticationPrincipal CandidateEntity userDetails // Forma moderna de pegar o usuário
+            @RequestBody ApplicationCreateDTO requestDTO,
+            @AuthenticationPrincipal UserEntity authenticatedUser
     ) {
+        // 1. Busca o perfil de CANDIDATO (isto permanece igual e funciona)
+        CandidateEntity candidateProfile = candidateRepository.findByUserIdUser(authenticatedUser.getIdUser())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Perfil de candidato não encontrado para o utilizador autenticado."
+                ));
 
-        UUID candidateId = userDetails.getId();
-
-        ApplicationEntity newApplication = applicationService.createApplication(
-                candidateId,
+        // 2. Passa o objeto 'candidateProfile' completo para o serviço
+        ApplicationEntity createdApplication = applicationService.createApplication(
+                candidateProfile, // Passa o objeto inteiro
                 requestDTO.jobVacancyId()
         );
 
-        // Converte a entidade para DTO antes de retornar
-        ApplicationResponseDTO response = toResponseDTO(newApplication);
+        // 3. Mapeia a resposta
+        ApplicationResponseDTO response = applicationMapper.toResponseDTO(createdApplication);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     /**
      * Endpoint para uma empresa ou recrutador alterar o status de uma aplicação.
      * Apenas 'COMPANY' ou 'RECRUITER' devem ter acesso.
      */
     @PatchMapping("/{id}/status")
-    // @PreAuthorize("hasAnyRole('COMPANY', 'RECRUITER')") // Exemplo de como proteger com Spring Security
+    @PreAuthorize("hasAnyRole('COMPANY', 'RECRUITER')") // Exemplo de como proteger com Spring Security
     public ResponseEntity<Void> updateStatus(
             @PathVariable UUID id,
             @Valid @RequestBody ApplicationStatusUpdateDTO requestDTO,
